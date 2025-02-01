@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Log Search Engine</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <style>
+    :root {
+      --primary-color: #2196f3;
+      --secondary-color: #1976d2;
+      --success-color: #4caf50;
+      --error-color: #f44336;
+      --background-color: #0e0e25;
+      --card-background: #1e1e3f;
+      --text-color: #ffffff;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--card-background);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    }
+
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.5s, fadeOut 0.5s 3s forwards;
+      z-index: 1000;
+    }
+
+    .alert-success {
+      background-color: var(--success-color);
+    }
+
+    .alert-error {
+      background-color: var(--error-color);
+    }
+
+    .alert i {
+      font-size: 1.2rem;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .search-section,
+    .upload-section,
+    .message-item {
+      background: var(--card-background);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+    }
+
+    .search-input-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center; /* Center the search input and button */
+      margin-bottom: 1rem;
+    }
+
+    .search-input {
+      flex: 0 1 60%; /* Adjust width of search input */
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-color);
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+    }
+
+    .search-button,
+    .upload-button {
+      transition: all 0.3s ease;
+      text-align: center;
+      background: linear-gradient(
+        45deg,
+        var(--primary-color),
+        var(--secondary-color)
+      );
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--border-radius);
+      color: white;
+      cursor: pointer;
+    }
+
+    .search-button:hover,
+    .upload-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-input {
+      flex: 0 1 calc(33.333% - 1rem);
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-color);
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+    }
+
+    .upload-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message-item {
+      background: var(--card-background);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      color: #aaa;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    mark {
+      background-color: rgba(255, 241, 118, 0.7);
+      color: #000;
+      padding: 0.1em 0.2em;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 768px) {
+      .search-input-group {
+        flex-direction: column;
+      }
+
+      .search-input,
+      .filter-input {
+        width: 100%;
+      }
+    }
+  </style>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Chat Log Search Engine</h1>
+      </header>
+
+      <main class="main-content">
+        <section class="search-section">
+          <div class="search-container">
+            <form id="searchForm" class="search-form">
+              <div class="search-input-group">
+                <input
+                  type="text"
+                  id="searchQuery"
+                  placeholder="Search messages..."
+                  class="search-input"
+                />
+                <button type="submit" class="search-button">Search</button>
+              </div>
+
+              <div class="filters">
+                <input
+                  type="text"
+                  id="senderFilter"
+                  placeholder="Filter by sender"
+                  class="filter-input"
+                />
+                <input
+                  type="text"
+                  id="chatroomFilter"
+                  placeholder="Filter by chatroom"
+                  class="filter-input"
+                />
+                <input type="date" id="dateFilter" class="filter-input" />
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="upload-section">
+          <form id="uploadForm" class="upload-form">
+            <div class="upload-container">
+              <input
+                type="file"
+                id="jsonFile"
+                accept=".json"
+                required
+                class="file-input"
+              />
+              <button type="submit" class="upload-button">
+                Load Chat Logs
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="results-section">
+          <div id="messagesList" class="messages-list">
+            <!-- Messages will be displayed here -->
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchForm = document.getElementById("searchForm");
+        const uploadForm = document.getElementById("uploadForm");
+        const messagesList = document.getElementById("messagesList");
+
+        searchForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const query = document.getElementById("searchQuery").value;
+          const sender = document.getElementById("senderFilter").value;
+          const chatroom = document.getElementById("chatroomFilter").value;
+          const date = document.getElementById("dateFilter").value;
+
+          try {
+            const response = await fetch(
+              `/search_messages?query=${encodeURIComponent(
+                query
+              )}&sender=${encodeURIComponent(
+                sender
+              )}&chatroom=${encodeURIComponent(
+                chatroom
+              )}&date=${encodeURIComponent(date)}`
+            );
+
+            if (response.ok) {
+              const messages = await response.json();
+              displayMessages(messages);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showError("Failed to search messages");
+          }
+        });
+
+        uploadForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const fileInput = document.getElementById("jsonFile");
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+
+          try {
+            const response = await fetch("/upload_json", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (response.ok) {
+              showSuccess("Chat logs uploaded successfully");
+              searchForm.dispatchEvent(new Event("submit")); // Refresh results
+            } else {
+              showError("Failed to upload file");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showError("Network error occurred");
+          }
+        });
+
+        function displayMessages(messages) {
+          messagesList.innerHTML = "";
+
+          if (messages.length === 0) {
+            messagesList.innerHTML = `
+                <div class="message-item">
+                    <div class="message-content">No messages found matching your search criteria.</div>
+                </div>
+            `;
+            return;
+          }
+
+          messages.forEach((message) => {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message-item";
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="sender">From: ${message.sender}</span>
+                    <span class="chatroom">Room: ${message.chatroom}</span>
+                    <span class="timestamp">Time: ${message.timestamp}</span>
+                </div>
+                <div class="message-content">
+                    ${message.highlighted_content}
+                </div>
+                <div class="message-metadata">
+                    <span class="relevance">Relevance Score: ${message.relevance_score}</span>
+                </div>
+            `;
+            messagesList.appendChild(messageDiv);
+          });
+        }
+
+        function showSuccess(message) {
+          const alert = document.createElement("div");
+          alert.className = "alert alert-success";
+          alert.innerHTML = `<i class="fas fa-check-circle"></i>${message}`;
+          document.body.appendChild(alert);
+          setTimeout(() => alert.remove(), 3500);
+        }
+
+        function showError(message) {
+          const alert = document.createElement("div");
+          alert.className = "alert alert-error";
+          alert.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${message}`;
+          document.body.appendChild(alert);
+          setTimeout(() => alert.remove(), 3500);
+        }
+      });
+    </script>
+  </body>
+</html>
